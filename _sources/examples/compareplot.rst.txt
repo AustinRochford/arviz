@@ -1,0 +1,15 @@
+
+.. _compareplot:
+
+
+Compare Plot
+============
+
+
+
+.. image:: _images/compareplot.png
+
+**Python source code:** :download:`[download source: compareplot.py]<compareplot.py>`
+
+.. literalinclude:: compareplot.py
+    :lines: 7-

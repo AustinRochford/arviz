@@ -1,0 +1,15 @@
+
+.. _traceplot:
+
+
+Traceplot
+=========
+
+
+
+.. image:: _images/traceplot.png
+
+**Python source code:** :download:`[download source: traceplot.py]<traceplot.py>`
+
+.. literalinclude:: traceplot.py
+    :lines: 7-

@@ -1,0 +1,6 @@
+arviz.posteriorplot
+===================
+
+.. currentmodule:: arviz
+
+.. autofunction:: posteriorplot

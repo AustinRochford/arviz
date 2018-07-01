@@ -1,0 +1,15 @@
+
+.. _jointplot:
+
+
+Joint Plot
+==========
+
+
+
+.. image:: _images/jointplot.png
+
+**Python source code:** :download:`[download source: jointplot.py]<jointplot.py>`
+
+.. literalinclude:: jointplot.py
+    :lines: 7-

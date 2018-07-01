@@ -1,0 +1,15 @@
+
+.. _kdeplot:
+
+
+KDE Plot
+========
+
+
+
+.. image:: _images/kdeplot.png
+
+**Python source code:** :download:`[download source: kdeplot.py]<kdeplot.py>`
+
+.. literalinclude:: kdeplot.py
+    :lines: 7-

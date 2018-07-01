@@ -1,0 +1,15 @@
+
+.. _forestplot:
+
+
+Forest Plot
+===========
+
+
+
+.. image:: _images/forestplot.png
+
+**Python source code:** :download:`[download source: forestplot.py]<forestplot.py>`
+
+.. literalinclude:: forestplot.py
+    :lines: 7-

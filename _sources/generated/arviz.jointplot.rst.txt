@@ -1,0 +1,6 @@
+arviz.jointplot
+===============
+
+.. currentmodule:: arviz
+
+.. autofunction:: jointplot

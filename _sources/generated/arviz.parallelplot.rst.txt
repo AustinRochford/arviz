@@ -1,0 +1,6 @@
+arviz.parallelplot
+==================
+
+.. currentmodule:: arviz
+
+.. autofunction:: parallelplot

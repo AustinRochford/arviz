@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arviz.plots.forestplot &#8212; ArviZ 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/logo.png"></span>
+           </a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../examples/index.html">Gallery</a></li>
+                <li><a href="../../../notebooks/Introduction.html">Quickstart</a></li>
+                <li><a href="../../../api.html">API</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Example Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/Introduction.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <h1>Source code for arviz.plots.forestplot</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.gridspec</span> <span class="k">import</span> <span class="n">GridSpec</span>
+<span class="kn">from</span> <span class="nn">..stats</span> <span class="k">import</span> <span class="n">hpd</span><span class="p">,</span> <span class="n">gelman_rubin</span><span class="p">,</span> <span class="n">effective_n</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">trace_to_dataframe</span><span class="p">,</span> <span class="n">expand_variable_names</span>
+<span class="kn">from</span> <span class="nn">.plot_utils</span> <span class="k">import</span> <span class="n">_scale_text</span>
+
+
+<div class="viewcode-block" id="forestplot"><a class="viewcode-back" href="../../../generated/arviz.forestplot.html#arviz.forestplot">[docs]</a><span class="k">def</span> <span class="nf">forestplot</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">varnames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">combined</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">quartiles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+               <span class="n">rhat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">neff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">main</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xtitle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylabels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span>
+               <span class="n">chain_spacing</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">vline</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vcolors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">textsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">skip_first</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">plot_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gridspec</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Forest plot</span>
+
+<span class="sd">    Generates a forest plot of 100*(1-alpha)% credible intervals from a trace or list of traces.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    trace : trace or list of traces</span>
+<span class="sd">        Trace(s) from an MCMC sample</span>
+<span class="sd">    models : list of strings (optional)</span>
+<span class="sd">        List with names for the models in the list of traces. Useful when plotting more that one</span>
+<span class="sd">        trace</span>
+<span class="sd">    varnames: list, optional</span>
+<span class="sd">        List of variables to plot (defaults to None, which results in all variables plotted)</span>
+<span class="sd">    combined : bool</span>
+<span class="sd">        Flag for combining multiple chains into a single chain. If False (default), chains will be</span>
+<span class="sd">        plotted separately.</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        Alpha value for (1-alpha)*100% credible intervals. Defaults to 0.05.</span>
+<span class="sd">    quartiles : bool, optional</span>
+<span class="sd">        Flag for plotting the interquartile range, in addition to the (1-alpha)*100% intervals.</span>
+<span class="sd">        Defaults to True</span>
+<span class="sd">    rhat : bool, optional</span>
+<span class="sd">        Flag for plotting Gelman-Rubin statistics. Requires 2 or more chains. Defaults to True</span>
+<span class="sd">    neff : bool, optional</span>
+<span class="sd">        Flag for plotting the effective sample size. Requires 2 or more chains. Defaults to True</span>
+<span class="sd">    main : string, optional</span>
+<span class="sd">        Title for main plot. Passing False results in titles being suppressed. Defaults to None</span>
+<span class="sd">    xtitle : string, optional</span>
+<span class="sd">        Label for x-axis. Defaults to None, i.e. no label</span>
+<span class="sd">    xlim : list or tuple, optional</span>
+<span class="sd">        Range for x-axis. Defaults to None, i.e. matplotlib&#39;s best guess.</span>
+<span class="sd">    ylabels : list or array, optional</span>
+<span class="sd">        User-defined labels for each variable. If not provided, the node</span>
+<span class="sd">        __name__ attributes are used</span>
+<span class="sd">    colors : list or string, optional</span>
+<span class="sd">        list with valid matplotlib colors, one color per model. Alternative a string can be passed.</span>
+<span class="sd">        If the string is `cycle`, it will automatically chose a color per model from the</span>
+<span class="sd">        matyplolibs cycle. If a single color is passed, eg &#39;k&#39;, &#39;C2&#39;, &#39;red&#39; this color will be used</span>
+<span class="sd">        for all models. Defauls to &#39;C0&#39; (blueish in most matplotlib styles)</span>
+<span class="sd">    chain_spacing : float, optional</span>
+<span class="sd">        Plot spacing between chains. Defaults to 0.1</span>
+<span class="sd">    vline : list, optional</span>
+<span class="sd">        Location of vertical references lines. Defaults to None}</span>
+<span class="sd">    vcolors : list or string, optional</span>
+<span class="sd">        list with valid matplotlib colors, one color per value in vline. If None (Defaults)</span>
+<span class="sd">        `vcolors` is the same as `colors`.</span>
+<span class="sd">    figsize : tuple, optional</span>
+<span class="sd">        Figure size. Defaults to None</span>
+<span class="sd">    textsize: int</span>
+<span class="sd">        Text size for labels. If None it will be autoscaled based on figsize.</span>
+<span class="sd">    skip_first : int</span>
+<span class="sd">        Number of first samples not shown in plots (burn-in).</span>
+<span class="sd">    plot_kwargs : dict, optional</span>
+<span class="sd">        Optional arguments for plot elements. Currently accepts `fontsize`, `linewidth`, `marker`</span>
+<span class="sd">        and `markersize`.</span>
+<span class="sd">    gridspec : GridSpec</span>
+<span class="sd">        Matplotlib GridSpec object. Defaults to None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gridspec : matplotlib GridSpec</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">plot_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plot_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">traces</span> <span class="o">=</span> <span class="p">[</span><span class="n">trace_to_dataframe</span><span class="p">(</span><span class="n">trace</span><span class="p">[</span><span class="n">skip_first</span><span class="p">:],</span> <span class="n">combined</span><span class="o">=</span><span class="n">combined</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">traces</span> <span class="o">=</span> <span class="p">[</span><span class="n">trace_to_dataframe</span><span class="p">(</span><span class="n">tr</span><span class="p">[</span><span class="n">skip_first</span><span class="p">:],</span> <span class="n">combined</span><span class="o">=</span><span class="n">combined</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">trace</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">models</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">traces</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;m_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">traces</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">traces</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The number of names for the models does not match the number of models&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">colors</span> <span class="o">==</span> <span class="s1">&#39;cycle&#39;</span><span class="p">:</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;C</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="mi">10</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">))]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">colors</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">))]</span>
+
+    <span class="c1"># Quantiles to be calculated</span>
+    <span class="k">if</span> <span class="n">quartiles</span><span class="p">:</span>
+        <span class="n">qlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.50</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">qlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.50</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)]</span>
+
+    <span class="n">nchains</span> <span class="o">=</span> <span class="p">[</span><span class="n">tr</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">varnames</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">varnames</span> <span class="o">=</span> <span class="nb">set</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">set</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">varnames</span> <span class="o">=</span> <span class="nb">set</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">set</span><span class="p">(</span><span class="n">expand_variable_names</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">varnames</span><span class="p">))</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">])</span>
+
+    <span class="n">plot_rhat</span> <span class="o">=</span> <span class="p">[</span><span class="n">rhat</span> <span class="ow">and</span> <span class="n">nch</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">nch</span> <span class="ow">in</span> <span class="n">nchains</span><span class="p">]</span>
+    <span class="n">plot_neff</span> <span class="o">=</span> <span class="p">[</span><span class="n">neff</span> <span class="ow">and</span> <span class="n">nch</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">nch</span> <span class="ow">in</span> <span class="n">nchains</span><span class="p">]</span>
+
+
+    <span class="k">if</span> <span class="n">figsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">varnames</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">textsize</span><span class="p">,</span> <span class="n">linewidth</span><span class="p">,</span> <span class="n">markersize</span> <span class="o">=</span> <span class="n">_scale_text</span><span class="p">(</span><span class="n">figsize</span><span class="p">,</span> <span class="n">textsize</span><span class="o">=</span><span class="n">textsize</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">gridspec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">num_subplots</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">plot_rhat</span><span class="p">):</span>
+            <span class="n">num_subplots</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">plot_neff</span><span class="p">):</span>
+            <span class="n">num_subplots</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">gridspec</span> <span class="o">=</span> <span class="n">GridSpec</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_subplots</span><span class="p">,</span> <span class="n">width_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">num_subplots</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">plot_rhat</span><span class="p">):</span>
+            <span class="n">gr_rhat</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gridspec</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">gr_rhat</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">((</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">))</span>
+            <span class="n">gr_rhat</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">2.1</span><span class="p">)</span>
+            <span class="n">gr_rhat</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+            <span class="n">gr_rhat</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;R-hat&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">textsize</span><span class="p">)</span>
+            <span class="n">gr_rhat</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">textsize</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">plot_neff</span><span class="p">):</span>
+            <span class="n">neffs</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">traces</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">effective_n</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+            <span class="n">mins</span><span class="p">,</span> <span class="n">maxs</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">neffs</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">neffs</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">gr_neff</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gridspec</span><span class="p">[</span><span class="n">num_subplots</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">gr_neff</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">((</span><span class="n">mins</span><span class="p">,</span> <span class="n">maxs</span><span class="p">))</span>
+            <span class="n">gr_neff</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+            <span class="n">gr_neff</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;n_eff&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">textsize</span><span class="p">)</span>
+            <span class="n">gr_neff</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">textsize</span><span class="p">)</span>
+    <span class="c1"># Subplot for confidence intervals</span>
+    <span class="n">interval_plot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gridspec</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">trace_quantiles</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">hpd_intervals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">:</span>
+        <span class="n">trace_quantiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">qlist</span><span class="p">))</span>
+        <span class="n">hpd_intervals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">hpd</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)))</span>
+
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">all_quants</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">bands</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mi">0</span><span class="p">)[</span><span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">varnames</span><span class="p">))]</span>
+    <span class="n">var_old</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="k">for</span> <span class="n">v_idx</span><span class="p">,</span> <span class="n">varname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">varnames</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">h_idx</span><span class="p">,</span> <span class="n">tr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">traces</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">plot_rhat</span><span class="p">[</span><span class="n">h_idx</span><span class="p">]:</span>
+                <span class="n">gr_stat</span> <span class="o">=</span> <span class="n">gelman_rubin</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plot_neff</span><span class="p">[</span><span class="n">h_idx</span><span class="p">]:</span>
+                <span class="n">n_e</span> <span class="o">=</span> <span class="n">effective_n</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">varname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">models</span><span class="p">[</span><span class="n">h_idx</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">varname</span><span class="p">)</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="n">var</span>
+                <span class="n">var</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Add spacing for each chain, if more than one</span>
+                <span class="n">offset</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[(</span><span class="n">chain_spacing</span> <span class="o">*</span> <span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                                <span class="o">**</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nchains</span><span class="p">[</span><span class="n">h_idx</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nchains</span><span class="p">[</span><span class="n">h_idx</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">nchains</span><span class="p">[</span><span class="n">h_idx</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">var_quantiles</span> <span class="o">=</span> <span class="n">trace_quantiles</span><span class="p">[</span><span class="n">h_idx</span><span class="p">][</span><span class="n">varname</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>
+                        <span class="n">var_hpd</span> <span class="o">=</span> <span class="n">hpd_intervals</span><span class="p">[</span><span class="n">h_idx</span><span class="p">][</span><span class="n">varname</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">var_quantiles</span> <span class="o">=</span> <span class="n">trace_quantiles</span><span class="p">[</span><span class="n">h_idx</span><span class="p">][</span><span class="n">varname</span><span class="p">]</span>
+                        <span class="n">var_hpd</span> <span class="o">=</span> <span class="n">hpd_intervals</span><span class="p">[</span><span class="n">h_idx</span><span class="p">][</span><span class="n">varname</span><span class="p">]</span>
+
+                    <span class="n">quants</span> <span class="o">=</span> <span class="n">var_quantiles</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">qlist</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span>
+
+                    <span class="c1"># Substitute HPD interval for quantile</span>
+                    <span class="n">quants</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_hpd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">quants</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_hpd</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+                    <span class="c1"># Ensure x-axis contains range of current interval</span>
+                    <span class="n">all_quants</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">quants</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">models</span><span class="p">[</span><span class="n">h_idx</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">varname</span><span class="p">)</span>
+
+                    <span class="c1"># Y coordinate with offset</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="n">var</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+
+                    <span class="n">interval_plot</span> <span class="o">=</span> <span class="n">_plot_tree</span><span class="p">(</span><span class="n">interval_plot</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">quants</span><span class="p">,</span>
+                                               <span class="n">quartiles</span><span class="p">,</span> <span class="n">colors</span><span class="p">[</span><span class="n">h_idx</span><span class="p">],</span>
+                                               <span class="n">linewidth</span><span class="p">,</span>
+                                               <span class="n">markersize</span><span class="p">,</span>
+                                               <span class="n">plot_kwargs</span><span class="p">)</span>
+
+                <span class="c1"># Genenerate Gelman-Rubin plot</span>
+                <span class="k">if</span> <span class="n">plot_rhat</span><span class="p">[</span><span class="n">h_idx</span><span class="p">]</span> <span class="ow">and</span> <span class="n">varname</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">gr_rhat</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">gr_stat</span><span class="p">[</span><span class="n">varname</span><span class="p">],</span> <span class="mi">2</span><span class="p">),</span> <span class="o">-</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span>
+                                 <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">h_idx</span><span class="p">],</span> <span class="n">markersize</span><span class="o">=</span><span class="n">markersize</span><span class="p">)</span>
+                <span class="c1"># Genenerate effective sample size plot</span>
+                <span class="k">if</span> <span class="n">plot_neff</span><span class="p">[</span><span class="n">h_idx</span><span class="p">]</span> <span class="ow">and</span> <span class="n">varname</span> <span class="ow">in</span> <span class="n">tr</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">gr_neff</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n_e</span><span class="p">[</span><span class="n">varname</span><span class="p">],</span> <span class="o">-</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span>
+                                 <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">h_idx</span><span class="p">],</span> <span class="n">markersize</span><span class="o">=</span><span class="n">markersize</span><span class="p">)</span>
+
+                <span class="n">var</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">traces</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">var_new</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">chain_spacing</span> <span class="o">-</span> <span class="mf">0.5</span>
+            <span class="n">interval_plot</span><span class="o">.</span><span class="n">axhspan</span><span class="p">(</span><span class="n">var_old</span><span class="p">,</span> <span class="n">var_new</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">bands</span><span class="p">[</span><span class="n">v_idx</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">plot_rhat</span><span class="p">):</span>
+                <span class="n">gr_rhat</span><span class="o">.</span><span class="n">axhspan</span><span class="p">(</span><span class="n">var_old</span><span class="p">,</span> <span class="n">var_new</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">bands</span><span class="p">[</span><span class="n">v_idx</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">plot_neff</span><span class="p">):</span>
+                <span class="n">gr_neff</span><span class="o">.</span><span class="n">axhspan</span><span class="p">(</span><span class="n">var_old</span><span class="p">,</span> <span class="n">var_new</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">bands</span><span class="p">[</span><span class="n">v_idx</span><span class="p">])</span>
+
+            <span class="n">var_old</span> <span class="o">=</span> <span class="n">var_new</span>
+
+    <span class="k">if</span> <span class="n">ylabels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">ylabels</span>
+
+    <span class="c1"># Update margins</span>
+    <span class="n">left_margin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.015</span>
+    <span class="n">gridspec</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="n">left_margin</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+
+    <span class="c1"># Define range of y-axis for forestplot and R-hat</span>
+    <span class="n">interval_plot</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span> <span class="n">var</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">plot_rhat</span><span class="p">):</span>
+        <span class="n">gr_rhat</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span> <span class="n">var</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">plot_neff</span><span class="p">):</span>
+        <span class="n">gr_neff</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span> <span class="n">var</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="n">plotrange</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">all_quants</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">all_quants</span><span class="p">)]</span>
+    <span class="n">datarange</span> <span class="o">=</span> <span class="n">plotrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">plotrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">interval_plot</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">plotrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">datarange</span><span class="p">,</span> <span class="n">plotrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">datarange</span><span class="p">)</span>
+
+    <span class="c1"># Add variable labels</span>
+    <span class="n">interval_plot</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([</span><span class="o">-</span> <span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">))])</span>
+    <span class="n">interval_plot</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fontsize&#39;</span><span class="p">,</span> <span class="n">textsize</span><span class="p">))</span>
+
+    <span class="c1"># Add title</span>
+    <span class="k">if</span> <span class="n">main</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plot_title</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:.0f}</span><span class="s2">% Credible Intervals&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">main</span><span class="p">:</span>
+        <span class="n">plot_title</span> <span class="o">=</span> <span class="n">main</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plot_title</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="n">interval_plot</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">plot_title</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fontsize&#39;</span><span class="p">,</span> <span class="n">textsize</span><span class="p">))</span>
+
+    <span class="c1"># Add x-axis label</span>
+    <span class="k">if</span> <span class="n">xtitle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">interval_plot</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xtitle</span><span class="p">)</span>
+
+    <span class="c1"># Constrain to specified range</span>
+    <span class="k">if</span> <span class="n">xlim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">interval_plot</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">*</span><span class="n">xlim</span><span class="p">)</span>
+
+    <span class="c1"># Remove ticklines on y-axes</span>
+    <span class="k">for</span> <span class="n">ticks</span> <span class="ow">in</span> <span class="n">interval_plot</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">get_major_ticks</span><span class="p">():</span>
+        <span class="n">ticks</span><span class="o">.</span><span class="n">tick1On</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">ticks</span><span class="o">.</span><span class="n">tick2On</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">for</span> <span class="n">loc</span><span class="p">,</span> <span class="n">spine</span> <span class="ow">in</span> <span class="n">interval_plot</span><span class="o">.</span><span class="n">spines</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">loc</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
+            <span class="n">spine</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>  <span class="c1"># don&#39;t draw spine</span>
+
+    <span class="c1"># Reference line</span>
+    <span class="k">if</span> <span class="n">vline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">vcolors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vcolors</span> <span class="o">=</span> <span class="n">colors</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vline</span><span class="p">):</span>
+            <span class="n">interval_plot</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">vcolors</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span>
+                                  <span class="n">lw</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;linewidth&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="p">))</span>
+    <span class="n">interval_plot</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">textsize</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">gridspec</span></div>
+
+
+<span class="k">def</span> <span class="nf">_plot_tree</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ntiles</span><span class="p">,</span> <span class="n">show_quartiles</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">linewidth</span><span class="p">,</span> <span class="n">markersize</span><span class="p">,</span> <span class="n">plot_kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper to plot errorbars for the forestplot.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ax: Matplotlib.Axes</span>
+<span class="sd">    y: float</span>
+<span class="sd">        y value to add error bar to</span>
+<span class="sd">    ntiles: iterable</span>
+<span class="sd">        A list or array of length 5 or 3</span>
+<span class="sd">    show_quartiles: boolean</span>
+<span class="sd">        Whether to plot the interquartile range</span>
+<span class="sd">    color : string</span>
+<span class="sd">        color</span>
+<span class="sd">    linewidth : float</span>
+<span class="sd">        Width of lines</span>
+<span class="sd">    markersize : float</span>
+<span class="sd">        Size of marker</span>
+<span class="sd">    plot_kwargs : dict</span>
+<span class="sd">        Further arguments to pass to plots</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Matplotlib.Axes with a single error bar added</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Plot outer interval</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="n">ntiles</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ntiles</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">y</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">lw</span><span class="o">=</span><span class="n">linewidth</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show_quartiles</span><span class="p">:</span>
+        <span class="c1"># Plot quartile interval</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="n">ntiles</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ntiles</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">y</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
+                    <span class="n">lw</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;linewidth&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">*</span> <span class="mi">2</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Plot median</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ntiles</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">y</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;marker&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">),</span>
+                <span class="n">ms</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;markersize&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="p">),</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Plot median</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ntiles</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">y</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;marker&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">),</span>
+                <span class="n">ms</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;markersize&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="p">),</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, ArviZ devs.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

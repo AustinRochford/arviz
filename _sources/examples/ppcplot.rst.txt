@@ -1,0 +1,15 @@
+
+.. _ppcplot:
+
+
+Posterior Predictive Check Plot
+===============================
+
+
+
+.. image:: _images/ppcplot.png
+
+**Python source code:** :download:`[download source: ppcplot.py]<ppcplot.py>`
+
+.. literalinclude:: ppcplot.py
+    :lines: 7-

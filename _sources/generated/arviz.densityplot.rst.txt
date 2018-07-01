@@ -1,0 +1,6 @@
+arviz.densityplot
+=================
+
+.. currentmodule:: arviz
+
+.. autofunction:: densityplot

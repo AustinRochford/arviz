@@ -1,0 +1,15 @@
+
+.. _pairplot:
+
+
+Pair Plot
+=========
+
+
+
+.. image:: _images/pairplot.png
+
+**Python source code:** :download:`[download source: pairplot.py]<pairplot.py>`
+
+.. literalinclude:: pairplot.py
+    :lines: 7-

@@ -1,0 +1,6 @@
+arviz.ppcplot
+=============
+
+.. currentmodule:: arviz
+
+.. autofunction:: ppcplot

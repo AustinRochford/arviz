@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arviz.forestplot &#8212; ArviZ 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arviz.kdeplot" href="arviz.kdeplot.html" />
+    <link rel="prev" title="arviz.energyplot" href="arviz.energyplot.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/logo.png"></span>
+           </a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../examples/index.html">Gallery</a></li>
+                <li><a href="../notebooks/Introduction.html">Quickstart</a></li>
+                <li><a href="../api.html">API</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Example Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/Introduction.html">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="arviz-forestplot">
+<h1>arviz.forestplot<a class="headerlink" href="#arviz-forestplot" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="arviz.forestplot">
+<code class="descclassname">arviz.</code><code class="descname">forestplot</code><span class="sig-paren">(</span><em>trace</em>, <em>models=None</em>, <em>varnames=None</em>, <em>combined=False</em>, <em>alpha=0.05</em>, <em>quartiles=True</em>, <em>rhat=True</em>, <em>neff=True</em>, <em>main=None</em>, <em>xtitle=None</em>, <em>xlim=None</em>, <em>ylabels=None</em>, <em>colors='C0'</em>, <em>chain_spacing=0.1</em>, <em>vline=None</em>, <em>vcolors=None</em>, <em>figsize=None</em>, <em>textsize=None</em>, <em>skip_first=0</em>, <em>plot_kwargs=None</em>, <em>gridspec=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/plots/forestplot.html#forestplot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.forestplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forest plot</p>
+<p>Generates a forest plot of 100*(1-alpha)% credible intervals from a trace or list of traces.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>trace</strong> <span class="classifier-delimiter">:</span> <span class="classifier">trace or list of traces</span></dt>
+<dd><p class="first last">Trace(s) from an MCMC sample</p>
+</dd>
+<dt><strong>models</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of strings (optional)</span></dt>
+<dd><p class="first last">List with names for the models in the list of traces. Useful when plotting more that one
+trace</p>
+</dd>
+<dt><strong>varnames: list, optional</strong></dt>
+<dd><p class="first last">List of variables to plot (defaults to None, which results in all variables plotted)</p>
+</dd>
+<dt><strong>combined</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">Flag for combining multiple chains into a single chain. If False (default), chains will be
+plotted separately.</p>
+</dd>
+<dt><strong>alpha</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">Alpha value for (1-alpha)*100% credible intervals. Defaults to 0.05.</p>
+</dd>
+<dt><strong>quartiles</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Flag for plotting the interquartile range, in addition to the (1-alpha)*100% intervals.
+Defaults to True</p>
+</dd>
+<dt><strong>rhat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Flag for plotting Gelman-Rubin statistics. Requires 2 or more chains. Defaults to True</p>
+</dd>
+<dt><strong>neff</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Flag for plotting the effective sample size. Requires 2 or more chains. Defaults to True</p>
+</dd>
+<dt><strong>main</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string, optional</span></dt>
+<dd><p class="first last">Title for main plot. Passing False results in titles being suppressed. Defaults to None</p>
+</dd>
+<dt><strong>xtitle</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string, optional</span></dt>
+<dd><p class="first last">Label for x-axis. Defaults to None, i.e. no label</p>
+</dd>
+<dt><strong>xlim</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list or tuple, optional</span></dt>
+<dd><p class="first last">Range for x-axis. Defaults to None, i.e. matplotlib’s best guess.</p>
+</dd>
+<dt><strong>ylabels</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list or array, optional</span></dt>
+<dd><p class="first last">User-defined labels for each variable. If not provided, the node
+__name__ attributes are used</p>
+</dd>
+<dt><strong>colors</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list or string, optional</span></dt>
+<dd><p class="first last">list with valid matplotlib colors, one color per model. Alternative a string can be passed.
+If the string is <cite>cycle</cite>, it will automatically chose a color per model from the
+matyplolibs cycle. If a single color is passed, eg ‘k’, ‘C2’, ‘red’ this color will be used
+for all models. Defauls to ‘C0’ (blueish in most matplotlib styles)</p>
+</dd>
+<dt><strong>chain_spacing</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">Plot spacing between chains. Defaults to 0.1</p>
+</dd>
+<dt><strong>vline</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list, optional</span></dt>
+<dd><p class="first last">Location of vertical references lines. Defaults to None}</p>
+</dd>
+<dt><strong>vcolors</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list or string, optional</span></dt>
+<dd><p class="first last">list with valid matplotlib colors, one color per value in vline. If None (Defaults)
+<cite>vcolors</cite> is the same as <cite>colors</cite>.</p>
+</dd>
+<dt><strong>figsize</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tuple, optional</span></dt>
+<dd><p class="first last">Figure size. Defaults to None</p>
+</dd>
+<dt><strong>textsize: int</strong></dt>
+<dd><p class="first last">Text size for labels. If None it will be autoscaled based on figsize.</p>
+</dd>
+<dt><strong>skip_first</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of first samples not shown in plots (burn-in).</p>
+</dd>
+<dt><strong>plot_kwargs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict, optional</span></dt>
+<dd><p class="first last">Optional arguments for plot elements. Currently accepts <cite>fontsize</cite>, <cite>linewidth</cite>, <cite>marker</cite>
+and <cite>markersize</cite>.</p>
+</dd>
+<dt><strong>gridspec</strong> <span class="classifier-delimiter">:</span> <span class="classifier">GridSpec</span></dt>
+<dd><p class="first last">Matplotlib GridSpec object. Defaults to None.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>gridspec</strong> <span class="classifier-delimiter">:</span> <span class="classifier">matplotlib GridSpec</span></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="../_sources/generated/arviz.forestplot.rst.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, ArviZ devs.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
